@@ -17,14 +17,14 @@
         </Col>
         <Col span="6">
           <i-switch :value="prependNewItem"
-                    @on-change="prependNewItemChange(); 
+                    @on-change="prependNewItemChange();
                                 focusOnInput();"
                     size="large"
                    >
             <span slot="open">Head</span>
             <span slot="close">Tail</span>
           </i-switch>
-        </Col>         
+        </Col>
       </Row>
     </form>
     <div class="showDoneLink">

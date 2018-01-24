@@ -72,7 +72,7 @@
 
   import Board from './Board.vue'
   import NewBoardModal from './NewBoardModal.vue'
-
+  
   import XXH from 'xxhashjs'
   import SettingsModal from './SettingsModal.vue'
 
