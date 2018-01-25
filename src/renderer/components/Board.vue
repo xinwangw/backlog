@@ -78,6 +78,7 @@
   const moment = require('moment')
   const storage = require('electron').remote.require('electron-settings')
   const notifier = require('electron').remote.require('electron-notifications')
+  const timers = {}
 
   export default {
     name: 'board',
@@ -196,25 +197,36 @@
         console.log(alarms)
         if (alarms) {
           alarms.forEach(a => {
-            console.log(a.text)
-            Rx.Observable.timer(moment(a.text.substring(a.text.indexOf('at') + 3), 'H:mm').toDate()).subscribe(val => {
-              console.log('check time:', a.text)
-              if (moment(a.text.substring(a.text.indexOf('at') + 3), 'H:mm').isBefore(Date.now())) {
-                console.log('show notification:')
-                this.changeIsDone(a.id, true)
-                const notification = notifier.notify('Reminder', {
-                  message: a.text,
-                  icon: 'https://image.flaticon.com/icons/svg/691/691758.svg',
-                  buttons: ['Dismiss'],
-                  duration: 300000
-                })
-                notification.on('buttonClicked', () => {
-                  notification.close()
-                })
-              }
-            })
+            this.addAlarm(a)
           })
         }
+      },
+      addAlarm (boardItem) {
+        if (!boardItem) {
+          return
+        }
+        if (timers[boardItem.id]) {
+          console.log(timers[boardItem.id])
+          timers[boardItem.id].next()
+          timers[boardItem.id].complete()
+        }
+        const timer = Rx.Observable.timer(moment(boardItem.text.substring(boardItem.text.indexOf('at') + 3), 'H:mm').toDate()).subscribe(val => {
+          console.log('check time:', boardItem.text)
+          if (moment(boardItem.text.substring(boardItem.text.indexOf('at') + 3), 'H:mm').isBefore(Date.now())) {
+            console.log('show notification:')
+            this.changeIsDone(boardItem.id, true)
+            const notification = notifier.notify('Reminder', {
+              message: boardItem.text,
+              icon: 'https://image.flaticon.com/icons/svg/691/691758.svg',
+              buttons: ['Dismiss'],
+              duration: 300000
+            })
+            notification.on('buttonClicked', () => {
+              notification.close()
+            })
+          }
+        })
+        timers[boardItem.id] = timer
       }
     },
     watch: {
