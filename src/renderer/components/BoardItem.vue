@@ -47,7 +47,7 @@
 <script>
   export default {
     name: 'board-item',
-    props: ['itemId', 'isDone', 'text', 'created', 'showDate'],
+    props: ['itemId', 'isDone', 'text', 'created', 'showDate', 'setAlarm'],
     data () {
       return {
         isEditing: false,
@@ -56,6 +56,7 @@
     },
     methods: {
       saveItem () {
+        console.log('setAlarm', this.setAlarm)
         if (this.draftText.trim() === '') {
           this.draftText = ''
           return
@@ -64,6 +65,7 @@
         this.$emit('changeItemVal', this.itemId, this.draftText)
       },
       editItem () {
+        console.log('setAlarm', this.setAlarm)
         this.turnOnEditing()
         this.$nextTick(function () {
           this.$refs.editableItem.focus()

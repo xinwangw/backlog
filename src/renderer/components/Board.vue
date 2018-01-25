@@ -58,6 +58,7 @@
                     :text="item.text"
                     :created="item.created"
                     :showDate="showDate"
+                    :setAlarm="setAlarm"
                     v-if="shouldBeDisplayed(item)"
                     @changeIsDone="changeIsDone"
                     @removeItem="removeItem"
@@ -73,12 +74,14 @@
   import draggable from 'vuedraggable'
   import XXH from 'xxhashjs'
   import BoardItem from './BoardItem.vue'
-
+  const Rx = require('rxjs/Rx')
+  const moment = require('moment')
   const storage = require('electron').remote.require('electron-settings')
+  const notifier = require('electron').remote.require('electron-notifications')
 
   export default {
     name: 'board',
-    props: ['boardId', 'selectedTab', 'showDone', 'prependNewItem', 'showDate'],
+    props: ['boardId', 'selectedTab', 'showDone', 'prependNewItem', 'showDate', 'setAlarm'],
     components: {
       BoardItem,
       draggable
@@ -113,6 +116,8 @@
         this.$emit('showDoneSwitched', !this.showDone, this.boardId)
       },
       changeIsDone (itemId, newVal) {
+        console.log('changeIsDone', itemId, newVal)
+        console.log('changeIsDone setAlarm', this.setAlarm)
         this.boardItems.find(item => item.id === itemId).isDone = newVal
         this.boardItems = this.boardItems.slice(0)
         this.saveBoardItems()
@@ -175,10 +180,40 @@
       },
       saveBoardItems () {
         storage.set(`board-item-${this.boardId}`, this.boardItems)
+        this.setAlarms()
       },
       fetchBoardItems () {
+        console.log('fetchBoardItems', this.boardId, this.setAlarm)
         if (storage.has(`board-item-${this.boardId}`)) {
           this.boardItems = storage.get(`board-item-${this.boardId}`)
+          if (this.setAlarm) {
+            this.setAlarms()
+          }
+        }
+      },
+      setAlarms () {
+        const alarms = this.boardItems.filter(b => !b.isDone && b.text.indexOf('at') >= 0)
+        console.log(alarms)
+        if (alarms) {
+          alarms.forEach(a => {
+            console.log(a.text)
+            Rx.Observable.timer(moment(a.text.substring(a.text.indexOf('at') + 3), 'H:mm').toDate()).subscribe(val => {
+              console.log('check time:', a.text)
+              if (moment(a.text.substring(a.text.indexOf('at') + 3), 'H:mm').isBefore(Date.now())) {
+                console.log('show notification:')
+                this.changeIsDone(a.id, true)
+                const notification = notifier.notify('Reminder', {
+                  message: a.text,
+                  icon: 'https://image.flaticon.com/icons/svg/691/691758.svg',
+                  buttons: ['Dismiss'],
+                  duration: 300000
+                })
+                notification.on('buttonClicked', () => {
+                  notification.close()
+                })
+              }
+            })
+          })
         }
       }
     },

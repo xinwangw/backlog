@@ -7,10 +7,13 @@
          okText="Add"
          :scrollable="true"
   >
+    <h4>Saved Password</h4>
+    <Input v-model="savedPasswordLocal" @on-change="saveSettings" type="password"/>
+    <div class="separator"></div>
     <Checkbox v-model="itemCreationDateLocal" @on-change="saveSettings">
       Show creation date for each item
     </Checkbox>
-    
+
     <div class="separator"></div>
     <h4>Setup board names and order</h4>
     <draggable :list="boardsLocal">
@@ -30,7 +33,7 @@
 
   export default {
     name: 'settings-modal',
-    props: ['isVisible', 'boards', 'itemCreationDate'],
+    props: ['isVisible', 'boards', 'itemCreationDate', 'savedPassword'],
     components: {
       draggable
     },
@@ -40,7 +43,8 @@
     data () {
       return {
         boardsLocal: null,
-        itemCreationDateLocal: this.itemCreationDate
+        itemCreationDateLocal: this.itemCreationDate,
+        savedPasswordLocal: this.savedPassword
       }
     },
     watch: {
@@ -50,7 +54,7 @@
     },
     methods: {
       saveSettings () {
-        this.$emit('saveSettings', {itemCreationDate: this.itemCreationDateLocal})
+        this.$emit('saveSettings', {itemCreationDate: this.itemCreationDateLocal, savedPassword: this.savedPasswordLocal})
       },
       saveBoards () {
         this.$emit('saveBoards', this.boardsLocal)
