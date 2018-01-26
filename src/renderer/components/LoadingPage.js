@@ -6,6 +6,7 @@ import SettingsModal from './SettingsModal.vue'
 const storage = require('electron').remote.require('electron-settings')
 const remote = require('electron').remote
 const {clipboard} = require('electron')
+const notifier = require('electron').remote.require('electron-notifications')
 
 export default {
     components: {
@@ -141,6 +142,7 @@ export default {
         },
         forceReload() {
             remote.getCurrentWindow().reload()
+            notifier.activeNotifications.forEach(n => n.close())
         },
         copyToClipboard() {
           clipboard.writeText(this.settings.savedPassword)
